@@ -131,7 +131,7 @@ public class ImageProcessing {
 		}else if(type.equals("2"))
 		{
 			actualImage = ImageProcessing.screenShot(driver, folderName, checkPoint, type);
-			ImageContrast.contrastImages(sImg + folderName + sampleImage, actualImage, folderName + differenceImage, we);
+			ImageContrast.contrastImages(sImg + folderName + File.separator + sampleImage, actualImage, folderName + File.separator + differenceImage, we);
 		}
 		else
 		{
