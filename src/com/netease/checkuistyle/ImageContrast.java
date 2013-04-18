@@ -10,19 +10,19 @@ import javax.imageio.ImageIO;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
-import org.testng.Assert;
 import com.sun.image.codec.jpeg.JPEGCodec;
 import com.sun.image.codec.jpeg.JPEGImageEncoder;
 
+/**
+ * ImageContrast changes image from RGB to LAB and make comparison, see more in wiki
+ */
 @SuppressWarnings("restriction")
 public class ImageContrast {
-	private static final double MAX_DELTA_THRESHOLD = 0; // color difference
-															// threshold
 	private static Point wePosition;
 	private static Dimension weDim;
 
 	/**
-	 * change RGB to XYZ
+	 * Change RGB to XYZ
 	 * 
 	 * @param rgb
 	 * @return xyz
@@ -48,7 +48,7 @@ public class ImageContrast {
 	}
 
 	/**
-	 * change XYZ to LAB
+	 * Change XYZ to LAB
 	 * 
 	 * @param xyz
 	 * @return lab
@@ -83,7 +83,7 @@ public class ImageContrast {
 	}
 
 	/**
-	 * contrast images
+	 * Contrast images
 	 * 
 	 * @param sampleImagePath
 	 * @param actualImagePath
@@ -118,7 +118,7 @@ public class ImageContrast {
 				if (expRGB != actRGB) {
 					double deltaE = getDelta(XYZ2LAB(RGB2XYZ(expRGB)),
 							XYZ2LAB(RGB2XYZ(actRGB)));
-					if (deltaE > MAX_DELTA_THRESHOLD) {
+					if (deltaE > Settings.MaxColorThreshold) {
 						newRGB = 0xff0000;// set red in difference place
 					}
 					isMatched = false;
@@ -126,17 +126,18 @@ public class ImageContrast {
 				difference.setRGB(x, y, newRGB);
 			}
 		}
+		FileOutputStream out = null;
 		if (!isMatched) {
 			try {
-				FileOutputStream out = new FileOutputStream("images/"
+				out = new FileOutputStream(Settings.ContrastImagePath
 						+ differenceImagePath + time + ".png");
 				JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(out);
 				encoder.encode(difference);
-				out.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			} finally {
-				Assert.fail("UIstyle wrong!" + "images/" + differenceImagePath
+				out.close();
+				System.err.println("UIstyle wrong!" + Settings.ContrastImagePath + differenceImagePath
 						+ time + ".png");
 			}
 		}

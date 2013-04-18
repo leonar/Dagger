@@ -3,12 +3,8 @@ package com.netease.checkuistyle;
 import java.awt.AWTException;
 import java.awt.Robot;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Properties;
 
-import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.OutputType;
@@ -19,37 +15,36 @@ import org.openqa.selenium.remote.Augmenter;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+/**
+ * ImageProcessing contains APIs for screenshot and image process, see more in wiki
+ */
 public class ImageProcessing {
-	public static String sImg = "res/samples/";
-	public static String cImg = "images/";
-
 	/**
 	 * ScreenShot
 	 * 
 	 * @param augmentedDriver
-	 *            WebDriver
 	 * @param folderName
 	 * @param imageName
 	 * @param type
 	 * @return path
 	 */
 	public static String screenShot(WebDriver augmentedDriver,
-			String folderName, String imageName, String type) {
+			String folderName, String imageName, int type) {
 		Robot rb = null;
 		try {
 			rb = new Robot();
 		} catch (AWTException e) {
 			e.printStackTrace();
 		}
-		rb.mouseMove(0, 0);
+		rb.mouseMove(0, 0);//move mouse to top left corner, for eliminating some effects of hover in pages
 
 		String dir_name = null;
-		if (type.equals("1")) {
-			dir_name = sImg + folderName;
-		} else if (type.equals("2")) {
-			dir_name = cImg + folderName;
+		if (type == 1) {
+			dir_name = Settings.SampleImagePath + folderName;
+		} else if (type == 2) {
+			dir_name = Settings.ContrastImagePath + folderName;
 		} else {
-			Assert.fail("Wrong type！Please check type.properties！");
+			System.err.println("Wrong type！Please check type.properties！");
 		}
 		augmentedDriver = new Augmenter().augment(augmentedDriver);
 		try {
@@ -64,7 +59,7 @@ public class ImageProcessing {
 	}
 
 	/**
-	 * clear images
+	 * Clear images
 	 * 
 	 * @param dir
 	 */
@@ -95,29 +90,7 @@ public class ImageProcessing {
 	}
 
 	/**
-	 * get screenshot type
-	 * 
-	 * @return type
-	 */
-	public static String getType() {
-		File pFile = new File("type.properties");
-		FileInputStream pInStream = null;
-		try {
-			pInStream = new FileInputStream(pFile);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-		Properties p = new Properties();
-		try {
-			p.load(pInStream);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return p.getProperty("type");
-	}
-
-	/**
-	 * image process
+	 * Image process
 	 * 
 	 * @param driver
 	 * @param folderName
@@ -133,18 +106,18 @@ public class ImageProcessing {
 		String sampleImage = checkPoint + "_sample";
 		String differenceImage = checkPoint + "_difference";
 		String actualImage = null;
-		String type = ImageProcessing.getType();
-		if (type.equals("1")) {
+		int type = Settings.ScreenShotType;
+		if (type == 1) {
 			actualImage = ImageProcessing.screenShot(driver, folderName,
 					sampleImage, type);
-		} else if (type.equals("2")) {
+		} else if (type == 2) {
 			actualImage = ImageProcessing.screenShot(driver, folderName,
 					checkPoint, type);
-			ImageContrast.contrastImages(sImg + folderName + File.separator
+			ImageContrast.contrastImages(Settings.SampleImagePath + folderName + File.separator
 					+ sampleImage, actualImage, folderName + File.separator
 					+ differenceImage, we);
 		} else {
-			Assert.fail("Wrong type！Please check type.properties！");
+			System.err.println("Wrong type！Please check type.properties！");
 		}
 	}
 
@@ -153,7 +126,7 @@ public class ImageProcessing {
 		try {
 			webElement = driver.findElement(by);
 		} catch (Exception e) {
-			Assert.fail(by.toString() + " can not be found！");
+			System.err.println(by.toString() + " can not be found！");
 		}
 		return webElement;
 	}
