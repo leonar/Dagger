@@ -37,12 +37,9 @@ public class ImageContrast {
 			xyz.y = 0;
 			xyz.z = 0;
 		} else {
-			xyz.x = (0.490 * r + 0.310 * g + 0.200 * b)
-					/ (0.667 * r + 1.132 * g + 1.200 * b);
-			xyz.y = (0.117 * r + 0.812 * g + 0.010 * b)
-					/ (0.667 * r + 1.132 * g + 1.200 * b);
-			xyz.z = (0.000 * r + 0.010 * g + 0.990 * b)
-					/ (0.667 * r + 1.132 * g + 1.200 * b);
+			xyz.x = (0.490 * r + 0.310 * g + 0.200 * b) / (0.667 * r + 1.132 * g + 1.200 * b);
+			xyz.y = (0.117 * r + 0.812 * g + 0.010 * b) / (0.667 * r + 1.132 * g + 1.200 * b);
+			xyz.z = (0.000 * r + 0.010 * g + 0.990 * b) / (0.667 * r + 1.132 * g + 1.200 * b);
 		}
 		return xyz;
 	}
@@ -78,8 +75,7 @@ public class ImageContrast {
 		double deltaL = lab1.l - lab2.l; // lightness difference
 		double deltaA = lab1.a - lab2.a; // chromaticity difference
 		double deltaB = lab1.b - lab2.b; // chromaticity difference
-		return Math.pow((Math.pow(deltaL, 2) + Math.pow(deltaA, 2) + Math.pow(
-				deltaB, 2)), 0.5); // total color difference
+		return Math.pow((Math.pow(deltaL, 2) + Math.pow(deltaA, 2) + Math.pow(deltaB, 2)), 0.5); // total color difference
 	}
 
 	/**
@@ -89,9 +85,7 @@ public class ImageContrast {
 	 * @param actualImagePath
 	 * @param differenceImagePath
 	 */
-	public static boolean contrastImages(String sampleImagePath,
-			String actualImagePath, String differenceImagePath, WebElement we)
-			throws Exception {
+	public static boolean contrastImages(String sampleImagePath, String actualImagePath, String differenceImagePath, WebElement we) throws Exception {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd-HHmmss");
 		String time = sdf.format(new Date());
 		BufferedImage sample = null, actual = null, difference = null;
@@ -107,8 +101,7 @@ public class ImageContrast {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		difference = new BufferedImage(sample.getWidth(), sample.getHeight(),
-				BufferedImage.TYPE_INT_RGB);
+		difference = new BufferedImage(sample.getWidth(), sample.getHeight(), BufferedImage.TYPE_INT_RGB);
 		boolean isMatched = true;
 		for (int y = top; y < top + height; ++y) {
 			for (int x = left; x < left + width; ++x) {
@@ -116,8 +109,7 @@ public class ImageContrast {
 				int actRGB = actual.getRGB(x, y);
 				int newRGB = actRGB;
 				if (expRGB != actRGB) {
-					double deltaE = getDelta(XYZ2LAB(RGB2XYZ(expRGB)),
-							XYZ2LAB(RGB2XYZ(actRGB)));
+					double deltaE = getDelta(XYZ2LAB(RGB2XYZ(expRGB)), XYZ2LAB(RGB2XYZ(actRGB)));
 					if (deltaE > Settings.MaxColorThreshold) {
 						newRGB = 0xff0000;// set red in difference place
 					}
@@ -129,16 +121,14 @@ public class ImageContrast {
 		FileOutputStream out = null;
 		if (!isMatched) {
 			try {
-				out = new FileOutputStream(Settings.ContrastImagePath
-						+ differenceImagePath + time + ".png");
+				out = new FileOutputStream(Settings.ContrastImagePath + differenceImagePath + time + ".png");
 				JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(out);
 				encoder.encode(difference);
 			} catch (IOException e) {
 				e.printStackTrace();
 			} finally {
 				out.close();
-				System.err.println("UIstyle wrong!" + Settings.ContrastImagePath + differenceImagePath
-						+ time + ".png");
+				System.err.println("UIstyle wrong!" + Settings.ContrastImagePath + differenceImagePath + time + ".png");
 			}
 		}
 		return isMatched;

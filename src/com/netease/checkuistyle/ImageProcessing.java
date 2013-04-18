@@ -7,7 +7,9 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.OutputType;
+import org.openqa.selenium.Point;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -28,30 +30,34 @@ public class ImageProcessing {
 	 * @param type
 	 * @return path
 	 */
-	public static String screenShot(WebDriver augmentedDriver,
-			String folderName, String imageName, int type) {
+	public static String screenShot(WebDriver augmentedDriver, String folderName, String imageName) {
 		Robot rb = null;
 		try {
 			rb = new Robot();
 		} catch (AWTException e) {
 			e.printStackTrace();
 		}
-		rb.mouseMove(0, 0);//move mouse to top left corner, for eliminating some effects of hover in pages
+		rb.mouseMove(0, 0);// move mouse to top left corner, for eliminating some effects of hover in pages
 
 		String dir_name = null;
-		if (type == 1) {
+		if (Settings.ScreenShotType == 1) {
 			dir_name = Settings.SampleImagePath + folderName;
-		} else if (type == 2) {
+		} else if (Settings.ScreenShotType == 2) {
 			dir_name = Settings.ContrastImagePath + folderName;
 		} else {
 			System.err.println("Wrong type！Please check type.properties！");
 		}
-		augmentedDriver = new Augmenter().augment(augmentedDriver);
+		if (Settings.BrowserCoreType == 1 || Settings.BrowserCoreType == 3) {
+			augmentedDriver.manage().window().setPosition(new Point(0, 0));
+			augmentedDriver.manage().window().setSize(new Dimension(9999, 9999));
+		} else if (Settings.BrowserCoreType == 2) {
+			augmentedDriver = new Augmenter().augment(augmentedDriver);
+		} else {
+			System.err.println("Wrong type！Please check type.properties！");
+		}		
 		try {
-			File source_file = ((TakesScreenshot) augmentedDriver)
-					.getScreenshotAs(OutputType.FILE);
-			FileUtils.copyFile(source_file, new File(dir_name + File.separator
-					+ imageName + ".png"));
+			File source_file = ((TakesScreenshot) augmentedDriver).getScreenshotAs(OutputType.FILE);
+			FileUtils.copyFile(source_file, new File(dir_name + File.separator + imageName + ".png"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -97,25 +103,18 @@ public class ImageProcessing {
 	 * @param checkPoint
 	 * @param xpath
 	 */
-	public static void process(WebDriver driver, String folderName,
-			String checkPoint, String xpath) throws Exception {
+	public static void process(WebDriver driver, String folderName, String checkPoint, String xpath) throws Exception {
 		WebDriverWait wait = new WebDriverWait(driver, 10);
-		WebElement we = wait.until(ExpectedConditions.elementToBeClickable(By
-				.xpath(xpath)));
+		WebElement we = wait.until(ExpectedConditions.elementToBeClickable(By.xpath(xpath)));
 		we = FindElement(driver, By.xpath(xpath));
 		String sampleImage = checkPoint + "_sample";
 		String differenceImage = checkPoint + "_difference";
 		String actualImage = null;
-		int type = Settings.ScreenShotType;
-		if (type == 1) {
-			actualImage = ImageProcessing.screenShot(driver, folderName,
-					sampleImage, type);
-		} else if (type == 2) {
-			actualImage = ImageProcessing.screenShot(driver, folderName,
-					checkPoint, type);
-			ImageContrast.contrastImages(Settings.SampleImagePath + folderName + File.separator
-					+ sampleImage, actualImage, folderName + File.separator
-					+ differenceImage, we);
+		if (Settings.ScreenShotType == 1) {
+			actualImage = ImageProcessing.screenShot(driver, folderName, sampleImage);
+		} else if (Settings.ScreenShotType == 2) {
+			actualImage = ImageProcessing.screenShot(driver, folderName, checkPoint);
+			ImageContrast.contrastImages(Settings.SampleImagePath + folderName + File.separator + sampleImage, actualImage, folderName + File.separator + differenceImage, we);
 		} else {
 			System.err.println("Wrong type！Please check type.properties！");
 		}
